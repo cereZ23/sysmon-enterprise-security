@@ -3,12 +3,12 @@ name: Sysmon Detection Testing
 on:
   push:
     paths:
-      - 'sysmon/*.xml'
-      - 'sysmon/tests/**'
+      - 'configs/*.xml'
+      - 'tests/**'
       - '.github/workflows/sysmon-test.yml'
   pull_request:
     paths:
-      - 'sysmon/*.xml'
+      - 'configs/*.xml'
   workflow_dispatch:
     inputs:
       config_type:
@@ -29,15 +29,15 @@ jobs:
       - name: Validate Sysmon XML files
         run: |
           echo "Validating Sysmon configuration XML syntax..."
-          if ls sysmon/sysmon-*.xml 1> /dev/null 2>&1; then
-            for file in sysmon/sysmon-*.xml; do
+          if ls configs/sysmon-*.xml 1> /dev/null 2>&1; then
+            for file in configs/sysmon-*.xml; do
               echo "Checking $file..."
               xmllint --noout "$file" && echo "  ✓ Valid XML" || exit 1
             done
             echo "All XML files are valid!"
           else
-            echo "No XML files found in sysmon/ directory"
-            ls -la sysmon/ || echo "sysmon directory not found"
+            echo "No XML files found in configs/ directory"
+            ls -la configs/ || echo "configs directory not found"
             exit 1
           fi
 
@@ -65,7 +65,7 @@ jobs:
       - name: Install Sysmon with ${{ matrix.config }} config
         shell: powershell
         run: |
-          $configFile = "sysmon\sysmon-${{ matrix.config }}.xml"
+          $configFile = "configs\sysmon-${{ matrix.config }}.xml"
           Write-Host "Installing Sysmon with config: $configFile"
 
           # Install Sysmon - ignore stderr as Sysmon writes info there
@@ -94,7 +94,7 @@ jobs:
           Write-Host "=" * 60
 
           # Source the test functions
-          . .\sysmon\tests\Test-SysmonDetection.ps1 -ConfigType "${{ matrix.config }}" -CI
+          . .\tests\Test-SysmonDetection.ps1 -ConfigType "${{ matrix.config }}" -CI
 
         continue-on-error: true
 
@@ -199,7 +199,7 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'SilentlyContinue'
-          & .\Sysmon\Sysmon64.exe -accepteula -i "sysmon\sysmon-${{ matrix.config }}.xml" *>&1 | Write-Host
+          & .\Sysmon\Sysmon64.exe -accepteula -i "configs\sysmon-${{ matrix.config }}.xml" *>&1 | Write-Host
           Start-Sleep -Seconds 5
           $service = Get-Service -Name Sysmon64 -ErrorAction SilentlyContinue
           if ($service -and $service.Status -eq 'Running') {
@@ -465,7 +465,7 @@ jobs:
 
           # Run the audit policy script - ignore exit code as some policies may not apply
           $ErrorActionPreference = 'Continue'
-          & .\sysmon\deploy\windows-audit-policy.ps1 -Verbose
+          & .\deploy\windows-audit-policy.ps1 -Verbose
 
           # Force success - we care about events, not policy application
           Write-Host "Audit policy configuration attempted"
@@ -625,7 +625,7 @@ jobs:
         run: |
           Write-Host "Enabling PowerShell logging..."
           $ErrorActionPreference = 'Continue'
-          & .\sysmon\deploy\enable-powershell-logging.ps1 -Verbose
+          & .\deploy\enable-powershell-logging.ps1 -Verbose
           Write-Host "PowerShell logging configured"
           exit 0
 
@@ -1112,7 +1112,7 @@ jobs:
 
           # Run the audit policy script
           $ErrorActionPreference = 'Continue'
-          & .\sysmon\deploy\windows-audit-policy.ps1 -Verbose
+          & .\deploy\windows-audit-policy.ps1 -Verbose
 
           # Check results
           $exitCode = $LASTEXITCODE
