@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Word temp files
+~$*.docx
+
+# Test results (generated)
+test-results/
+test-results-*/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
